@@ -373,8 +373,6 @@ func syncRepo(repo, branch, rev string, depth int, gitRoot, dest string) error {
 	target := gitRoot //path.Join(gitRoot, dest)
 	gitRepoPath := path.Join(target, ".git")
 	//hash := rev
-	log.V(0).Infof("syncrepo - pulled target", target)
-	log.V(0).Infof("syncrepo - git repo path", gitRepoPath)
 	_, err := os.Stat(gitRepoPath)
 	switch {
 	case os.IsNotExist(err):
