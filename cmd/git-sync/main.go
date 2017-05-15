@@ -320,7 +320,6 @@ func cloneRepo(repo, branch, rev string, depth int, gitRoot string) error {
 		args = append(args, "--depth", strconv.Itoa(depth))
 	}
 	args = append(args, repo, gitRoot)
-	log.V(0).Infof("cloning args %s", args)
 
 	_, err := runCommand("", "git", args...)
 	if err != nil {
@@ -338,7 +337,6 @@ func pullRepo(repo string, depth int, gitRoot string) error {
 		args = append(args, "--depth", strconv.Itoa(depth))
 	}
 	args = append(args, repo)
-	log.V(0).Infof("pull args %s", args)
 	_, err := runCommand("", "git", args...)
 	if err != nil {
 		return err
