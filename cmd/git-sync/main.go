@@ -314,16 +314,36 @@ func addWorktreeAndSwap(gitRoot, dest, branch, rev, hash string) error {
 }
 
 func cloneRepo(repo, branch, rev string, depth int, gitRoot string) error {
-	args := []string{"clone", "--no-checkout", "-b", branch}
+	args := []string{"clone", "-b", branch}
+	//args := []string{"clone", "--no-checkout", "-b", branch}
 	if depth != 0 {
 		args = append(args, "--depth", strconv.Itoa(depth))
 	}
 	args = append(args, repo, gitRoot)
+	log.V(0).Infof("cloning args %s", args)
+
 	_, err := runCommand("", "git", args...)
 	if err != nil {
 		return err
 	}
 	log.V(0).Infof("cloned %s", repo)
+
+	return nil
+}
+
+func pullRepo(repo string, depth int, gitRoot string) error {
+	os.Chdir(gitRoot)
+	args := []string{"pull"}
+	if depth != 0 {
+		args = append(args, "--depth", strconv.Itoa(depth))
+	}
+	args = append(args, repo)
+	log.V(0).Infof("pull args %s", args)
+	_, err := runCommand("", "git", args...)
+	if err != nil {
+		return err
+	}
+	log.V(0).Infof("pulled %s", repo)
 
 	return nil
 }
@@ -350,9 +370,11 @@ func revIsHash(rev, gitRoot string) (bool, error) {
 
 // syncRepo syncs the branch of a given repository to the destination at the given rev.
 func syncRepo(repo, branch, rev string, depth int, gitRoot, dest string) error {
-	target := path.Join(gitRoot, dest)
+	target := gitRoot //path.Join(gitRoot, dest)
 	gitRepoPath := path.Join(target, ".git")
-	hash := rev
+	//hash := rev
+	log.V(0).Infof("syncrepo - pulled target", target)
+	log.V(0).Infof("syncrepo - git repo path", gitRepoPath)
 	_, err := os.Stat(gitRepoPath)
 	switch {
 	case os.IsNotExist(err):
@@ -360,10 +382,10 @@ func syncRepo(repo, branch, rev string, depth int, gitRoot, dest string) error {
 		if err != nil {
 			return err
 		}
-		hash, err = hashForRev(rev, gitRoot)
+		/*hash, err = hashForRev(rev, gitRoot)
 		if err != nil {
 			return err
-		}
+		}*/
 	case err != nil:
 		return fmt.Errorf("error checking if repo exists %q: %v", gitRepoPath, err)
 	default:
@@ -375,14 +397,20 @@ func syncRepo(repo, branch, rev string, depth int, gitRoot, dest string) error {
 		log.V(2).Infof("remote hash: %s", remote)
 		if local != remote {
 			log.V(0).Infof("update required")
-			hash = remote
+			//hash = remote
+		  err = pullRepo(repo, depth, gitRoot)
+			if err != nil {
+				return err
+			}
+			return nil
 		} else {
 			log.V(1).Infof("no update required")
 			return nil
 		}
 	}
 
-	return addWorktreeAndSwap(gitRoot, dest, branch, rev, hash)
+	return nil
+	//return addWorktreeAndSwap(gitRoot, dest, branch, rev, hash)
 }
 
 // getRevs returns the local and upstream hashes for rev.

@@ -25,5 +25,5 @@ RUN apk update --no-cache && apk add \
     git \
     openssh-client
 
-USER nobody:nobody
+USER root:root 
 ENTRYPOINT ["/ARG_BIN"]
